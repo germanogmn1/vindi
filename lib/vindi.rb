@@ -28,4 +28,30 @@ module Vindi
   end
 
   extend Configuration
+
+  class RateLimit
+    attr_reader :limit, :remaining, :reset_at
+
+    def initialize
+      @limit = 120 # start with the limit that is on the docs
+    end
+
+    def update(response)
+      @limit = response.headers['Rate-Limit-Limit'].to_i
+      @remaining = response.headers['Rate-Limit-Remaining'].to_i
+      @reset_at = Time.at(response.headers['Rate-Limit-Reset'].to_i)
+    end
+
+    def available
+      reset? ? @limit : @remaining
+    end
+
+    def reset?
+      @reset_at.nil? || Time.now > @reset_at
+    end
+  end
+
+  def self.rate_limit
+    @rate_limit ||= RateLimit.new
+  end
 end

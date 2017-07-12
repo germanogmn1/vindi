@@ -27,6 +27,7 @@ module Vindi
     # @return [HTTParty::Response] http response from the performed action
     def perform
       result = self.class.public_send(request_method, uri.to_s, { OPTIONS_KEY[request_method] => options })
+      Vindi.rate_limit.update(result)
       ResponseValidator.new(result.code, result.parsed_response).validate!
     end
 
