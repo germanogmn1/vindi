@@ -14,7 +14,7 @@ module Vindi
       let(:endpoint) do
         "https://app.vindi.com.br/api/v1/customers.json"
       end
-      let(:resp_double) { instance_double("response", code: 200, parsed_response: "") }
+      let(:resp_double) { instance_double("response", code: 200, parsed_response: "", headers: {}) }
 
       context "given a successful get request to customers" do
         let(:request_method) { :get }
