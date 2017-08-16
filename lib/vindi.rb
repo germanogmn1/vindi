@@ -25,10 +25,13 @@ module Vindi
     def configure
       yield self
       self.rate_limit_callback ||= ->(*) {}
+      @rate_limit = RateLimit.new
     end
   end
 
   extend Configuration
+
+  attr_reader :rate_limit
 
   class RateLimit
     attr_reader :limit, :remaining, :reset_at
@@ -55,9 +58,5 @@ module Vindi
     def reset?
       Time.now > @reset_at
     end
-  end
-
-  def self.rate_limit
-    @rate_limit ||= RateLimit.new
   end
 end
