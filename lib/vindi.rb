@@ -20,10 +20,11 @@ require 'vindi/normalizer'
 module Vindi
 
   module Configuration
-    attr_accessor :api_key
+    attr_accessor :api_key, :rate_limit_callback
 
     def configure
       yield self
+      self.rate_limit_callback ||= ->(*) {}
     end
   end
 
@@ -33,13 +34,18 @@ module Vindi
     attr_reader :limit, :remaining, :reset_at
 
     def initialize
-      @limit = 120 # start with the limit that is on the docs
+      # start with the values that are on the docs
+      @limit = 120
+      @remaining = @limit
+      @reset_at = Time.now + 1.minute
+      Vindi.rate_limit_callback.call(self)
     end
 
     def update(response)
       @limit = response.headers['Rate-Limit-Limit'].to_i
       @remaining = response.headers['Rate-Limit-Remaining'].to_i
       @reset_at = Time.at(response.headers['Rate-Limit-Reset'].to_i)
+      Vindi.rate_limit_callback.call(self)
     end
 
     def available
@@ -47,7 +53,7 @@ module Vindi
     end
 
     def reset?
-      @reset_at.nil? || Time.now > @reset_at
+      Time.now > @reset_at
     end
   end
 
