@@ -31,7 +31,9 @@ module Vindi
 
   extend Configuration
 
-  attr_reader :rate_limit
+  class << self
+    attr_reader :rate_limit
+  end
 
   class RateLimit
     attr_reader :limit, :remaining, :reset_at
